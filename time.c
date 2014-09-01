@@ -11,7 +11,7 @@ int main(int argc, char *argv[]) {
 		printf("no address argument\n");
 		return 1;}
 
-	if ((s = GETSOCK()) < 0) {perror("socket"); return 1;}
+	if ((s = getsock()) < 0) {perror("socket"); return 1;}
 
 	sa = *sockaddr(13, argv[1], &sa);
 

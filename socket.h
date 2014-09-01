@@ -35,16 +35,16 @@ int get6bind(int s, struct sockaddr_in6* sa) {
 }
 
 int _getaccept(int s, struct sockaddr* sa) {
-	size = sizeof (struct sockaddr);
+	int size = sizeof (struct sockaddr);
 	return accept(s, sa, (socklen_t *) &size);
 }
 
 int getaccept(int s, struct sockaddr_in* sa) {
-	return _getaccept(s, (sockaddr *) sa);
+	return _getaccept(s, (struct sockaddr *) sa);
 }
 
 int get6accept(int s, struct sockaddr_in6* sa) {
-	return _getaccept(s, (sockaddr *) sa);
+	return _getaccept(s, (struct sockaddr *) sa);
 }
 
 // ipv4 addr to int

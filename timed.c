@@ -41,7 +41,7 @@ int main() {
     for (;;) {
         b = sizeof sa;
 
-        if ((c = getaccept(s, sa)) < 0) {
+        if ((c = getaccept(s, &sa)) < 0) {
             perror("timed accept"); return 4;}
 
         if ((client = fdopen(c, "w")) == NULL) {
