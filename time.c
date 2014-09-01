@@ -1,41 +1,22 @@
 #include <stdio.h>
-#include <unistd.h>
-//#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h> // inet stuffs (ipv4)
-#include <arpa/inet.h> // inet_addr
-#include <errno.h> // errors
-
-// Socket: ip v4 w/ TCP
-int getsock() {
-	return socket(PF_INET, SOCK_STREAM, 0);
-}
-
-// Connection
-int getconn(int s, char *str) {
-	struct sockaddr_in sa = {0};
-	// Connection Struct
-	sa.sin_family = AF_INET;
-	sa.sin_port = htons(13); // host to network endian conversion
-	inet_aton(str, &sa.sin_addr); // stores network ordered addr in string (dot notation) to sa.sin_addr.s_addr (super convenient).
-
-	return connect(s, (struct sockaddr *) &sa, sizeof sa);
-}
+#import "socket.h"
 
 int main(int argc, char *argv[]) {
 	int s, conn, bytes;
 	char buffer[BUFSIZ+1] = {0};
+	struct sockaddr_in sa;
 
 	// check args
 	if (argc < 2) {
 		printf("no address argument\n");
 		return 1;}
 
-	// try ipv6
-	if ((s = getsock()) < 0) {perror("socket"); return 1;}
+	if ((s = GETSOCK()) < 0) {perror("socket"); return 1;}
 
-	if ((conn = getconn(s, argv[1])) < 0) {
-		if (errno != ECONNREFUSED) {perror("connect");}
+	sa = *sockaddr(13, argv[1], &sa);
+
+	if ((conn = getconn(s, &sa)) < 0) {
+		perror("connect");
 		close(s); return 2;}
 
 	// Read from connection

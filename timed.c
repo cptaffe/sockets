@@ -1,16 +1,7 @@
-/*
- * daytimed - a port 13 server
- *
- * Programmed by G. Adam Stanislav
- * June 19, 2001
- */
 #include <stdio.h>
-#include <string.h>
 #include <time.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
+
+#import "socket.h"
 
 #define BACKLOG 4
 
@@ -22,20 +13,14 @@ int main() {
     struct tm *tm;
     FILE *client;
 
-    if ((s = socket(PF_INET, SOCK_STREAM, 0)) < 0) {
+    if ((s = getsock()) < 0) {
         perror("socket");
         return 1;
     }
 
-    bzero(&sa, sizeof sa);
+    sa = *sockaddrn(13, INADDR_ANY, &sa);
 
-    sa.sin_family = AF_INET;
-    sa.sin_port   = htons(13);
-
-    if (INADDR_ANY)
-        sa.sin_addr.s_addr = htonl(INADDR_ANY);
-
-    if (bind(s, (struct sockaddr *) &sa, sizeof sa) < 0) {
+    if (getbind(s, &sa) < 0) {
         perror("bind"); return 2;}
 
     switch (fork()) {
@@ -56,21 +41,14 @@ int main() {
     for (;;) {
         b = sizeof sa;
 
-        if ((c = accept(s, (struct sockaddr *) &sa, (socklen_t *) &b)) < 0) {
-            perror("daytimed accept");
-            return 4;
-        }
+        if ((c = getaccept(s, sa)) < 0) {
+            perror("timed accept"); return 4;}
 
         if ((client = fdopen(c, "w")) == NULL) {
-            perror("daytimed fdopen");
-            return 5;
-        }
+            perror("timed fdopen"); return 5;}
 
         if ((t = time(NULL)) < 0) {
-            perror("daytimed time");
-
-            return 6;
-        }
+            perror("timed time"); return 6;}
 
         tm = gmtime(&t);
         fprintf(client, "%.4i-%.2i-%.2iT%.2i:%.2i:%.2iZ\n",
