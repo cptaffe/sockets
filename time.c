@@ -34,11 +34,11 @@ int main(int argc, char *argv[]) {
 		printf("no address argument\n");
 		return 1;}
 
-	if ((s = get6sock()) < 0) {perror("socket"); ipv6 = 1;}
+	if ((s = get6sock()) < 0) {perror("socket"); return 1;}
 
 	if ((conn = get6conn(s, argv[1])) < 0) {
 		if (errno != ECONNREFUSED) {perror("connect");}
-		close(s); ipv6 = 2;}
+		close(s); return 2;}
 
 	// Read from connection
 	while ((bytes = read(s, buffer, BUFSIZ)) > 0) {
