@@ -4,51 +4,77 @@
 #include <sys/socket.h>
 #include <netinet/in.h> // inet stuffs (ipv4)
 #include <arpa/inet.h> // inet_addr
+#include <errno.h> // errors
+
+// Socket: ip v4 w/ TCP
+int getsock() {
+	return socket(PF_INET, SOCK_STREAM, 0);
+}
+
+// Connection
+int getconn(int s, char *str) {
+	struct sockaddr_in sa = {0};
+	// Connection Struct
+	sa.sin_family = AF_INET;
+	sa.sin_port = htons(13); // host to network endian conversion
+	inet_aton(str, &sa.sin_addr); // stores network ordered addr in string (dot notation) to sa.sin_addr.s_addr (super convenient).
+
+	return connect(s, (struct sockaddr *) &sa, sizeof sa);
+}
+
+// Socket: ip v4 w/ TCP
+int get6sock() {
+	return socket(PF_INET6, SOCK_STREAM, 0);
+}
+
+// Connection
+int get6conn(int s, char *str) {
+	struct sockaddr_in6 sa = {0};
+	// Connection Struct
+	sa.sin6_family = AF_INET6;
+	sa.sin6_port = htons(13); // host to network endian conversion
+	inet_pton(AF_INET6, str, &sa.sin6_addr); // stores network ordered addr in string (dot notation) to sa.sin_addr.s_addr (super convenient).
+
+	return connect(s, (struct sockaddr *) &sa, sizeof sa);
+}
+
+
+
 
 int main(int argc, char *argv[]) {
 	int s, conn, bytes;
-	struct sockaddr_in sa = {0};
 	char buffer[BUFSIZ+1] = {0};
 
 	// check args
 	if (argc < 2) {
 		printf("no address argument\n");
-		return 1;
-	}
+		return 1;}
 
-	// Fork into 10 processes
-	/*for (int i = 0; i < 10; i++) {
-		int pid = fork();
-		if (pid == 0) {
-			break;
+	{int ipv6 = 0;
+
+		// try ipv6
+		if ((s = get6sock()) < 0) {perror("socket"); ipv6 = 1;}
+
+		if ((conn = get6conn(s, argv[1])) < 0) {
+			if (errno != ECONNREFUSED) {perror("connect");}
+			close(s); ipv6 = 2;}
+
+		// try ipv4
+		if (ipv6 != 0) {
+			puts("ipv6 failed, trying ipv4.");
+			if ((s = getsock()) < 0) {perror("socket"); return 1;}
+
+			if ((conn = getconn(s, argv[1])) < 0) {
+				perror("connect");
+				close(s);
+				return 2;
+			}
 		}
-	}*/
-
-	// Socket: ip v4 w/ TCP
-	s = socket(PF_INET, SOCK_STREAM, 0);
-	if (s < 0) {
-		perror("socket");
-		return 1;
-	}
-
-	// Connection Struct
-	sa.sin_family = AF_INET;
-	sa.sin_port = htons(13); // host to network short
-	// ip address 165.193.126.229
-	sa.sin_addr.s_addr = inet_addr(argv[1]);
-
-	// Connection
-	conn = connect(s, (struct sockaddr *) &sa, sizeof sa);
-	if (conn < 0) {
-		perror("connect");
-		close(s);
-		return 2;
 	}
 
 	// Read from connection
 	while ((bytes = read(s, buffer, BUFSIZ)) > 0) {
-		write(1, buffer, bytes);
-	}
+		write(1, buffer, bytes);}
 
 	// close and return
 	close(s);
