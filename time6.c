@@ -7,20 +7,23 @@
 #include <errno.h> // errors
 
 // Socket: ip v4 w/ TCP
-int getsock() {
-	return socket(PF_INET, SOCK_STREAM, 0);
+int get6sock() {
+	return socket(PF_INET6, SOCK_STREAM, 0);
 }
 
 // Connection
-int getconn(int s, char *str) {
-	struct sockaddr_in sa = {0};
+int get6conn(int s, char *str) {
+	struct sockaddr_in6 sa = {0};
 	// Connection Struct
-	sa.sin_family = AF_INET;
-	sa.sin_port = htons(13); // host to network endian conversion
-	inet_aton(str, &sa.sin_addr); // stores network ordered addr in string (dot notation) to sa.sin_addr.s_addr (super convenient).
+	sa.sin6_family = AF_INET6;
+	sa.sin6_port = htons(13); // host to network endian conversion
+	inet_pton(AF_INET6, str, &sa.sin6_addr); // stores network ordered addr in string (dot notation) to sa.sin_addr.s_addr (super convenient).
 
 	return connect(s, (struct sockaddr *) &sa, sizeof sa);
 }
+
+
+
 
 int main(int argc, char *argv[]) {
 	int s, conn, bytes;
@@ -31,10 +34,9 @@ int main(int argc, char *argv[]) {
 		printf("no address argument\n");
 		return 1;}
 
-	// try ipv6
-	if ((s = getsock()) < 0) {perror("socket"); return 1;}
+	if ((s = get6sock()) < 0) {perror("socket"); return 1;}
 
-	if ((conn = getconn(s, argv[1])) < 0) {
+	if ((conn = get6conn(s, argv[1])) < 0) {
 		if (errno != ECONNREFUSED) {perror("connect");}
 		close(s); return 2;}
 

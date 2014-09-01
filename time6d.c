@@ -17,23 +17,23 @@
 int main() {
     register int s, c;
     int b;
-    struct sockaddr_in sa;
+    struct sockaddr_in6 sa;
     time_t t;
     struct tm *tm;
     FILE *client;
 
-    if ((s = socket(PF_INET, SOCK_STREAM, 0)) < 0) {
+    if ((s = socket(PF_INET6, SOCK_STREAM, 0)) < 0) {
         perror("socket");
         return 1;
     }
 
     bzero(&sa, sizeof sa);
 
-    sa.sin_family = AF_INET;
-    sa.sin_port   = htons(13);
+    sa.sin6_family = AF_INET6;
+    sa.sin6_port   = htons(13);
 
     if (INADDR_ANY)
-        sa.sin_addr.s_addr = htonl(INADDR_ANY);
+        sa.sin6_addr.s6_addr[0] = htonl(INADDR_ANY);
 
     if (bind(s, (struct sockaddr *) &sa, sizeof sa) < 0) {
         perror("bind"); return 2;}
