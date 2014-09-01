@@ -1,5 +1,5 @@
 CC=clang
-CFLAGS=-O3 -std=gnu99
+# gnu99 is standard.
 
 time:
 	$(CC) $(CFLAGS) time.c -o time
