@@ -20,7 +20,7 @@ void forktosock(int s) {
             bytes = read(s, str, size);
             total += bytes;
         } while (str[bytes - 1] != '\0' && bytes > 0); // end on read end or null terminator
-        printf("conn: %s", str);
+        printf("\x1b[36mconn:\x1b[0m %s", str);
     }
 
     close(s);
@@ -75,6 +75,8 @@ void conn_serve(char *ip) {
         perror("connect");
         close(s); exit(2);}
 
+    printf("\x1b[36mconnection established with server\x1b[0m\n");
+
     forkreadwrite(s);
 }
 
@@ -95,6 +97,8 @@ void serve_conn() {
         if ((c = getaccept(s, &sa)) < 0) {
             perror("chatd accept"); exit(4);
         }
+
+        printf("\x1b[36mconnection established with client\x1b[0m\n");
 
         forkreadwrite(c);
     }
