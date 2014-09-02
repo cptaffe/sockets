@@ -79,7 +79,6 @@ void conn_serve(char *ip) {
 }
 
 void serve_conn() {
-    printf("in serve_conn!\n");
     int s, c;
     struct sockaddr_in sa;
 
