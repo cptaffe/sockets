@@ -1,9 +1,13 @@
 CC=clang
 # gnu99 is standard.
 
-time:
-	$(CC) $(CFLAGS) time.c -o time
-	$(CC) $(CFLAGS) timed.c -o timed
+chat:
+	$(CC) $(CFLAGS) chat.c -o chat
+	$(CC) $(CFLAGS) chatd.c -o chatd
 
 clean:
-	rm time timed
+	rm chat chatd
+
+restart:
+	sudo pkill chatd
+	sudo ./chatd

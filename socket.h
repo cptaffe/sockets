@@ -47,16 +47,6 @@ int get6accept(int s, struct sockaddr_in6* sa) {
 	return _getaccept(s, (struct sockaddr *) sa);
 }
 
-// ipv4 addr to int
-/*int addrton(char *addr, struct sockaddr *sa) {
-	inet_pton(AF_INET, addr, &sa->sin_addr);
-}
-
-// ipv6 addr to int
-int addr6ton(char *addr, struct sockaddr *sa) {
-	inet_pton(AF_INET6, addr, &sa->sin_addr);
-}*/
-
 // ipv4 struct
 struct sockaddr_in *_sockaddr(int port, struct sockaddr_in *sa) {
 	sa->sin_family = AF_INET;
