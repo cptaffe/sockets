@@ -1,4 +1,5 @@
 CC=clang
+CFLAGS=-pthread
 # gnu99 is standard.
 
 chat:

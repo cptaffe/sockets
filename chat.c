@@ -1,18 +1,21 @@
 #include <stdio.h>
 #include <string.h>
+#include <pthread.h>
 
 #import "socket.h"
 
 #define BACKLOG 4
 #define PORT 6040
 
-void forktosock(int s) {
+void *forktosock(void *c) {
+	printf("forktosock\n");
     // Read from connection, write to stdout
+    int s = *(int *) c;
     const int size = BUFSIZ;
     char str[size]; int bytes, total;
 
     // loop sends and recieves null-terminated strings.
-    while (1) {
+    do {
         // read from socket & print to stdout.
         total = 0;
         do {
@@ -21,32 +24,45 @@ void forktosock(int s) {
             total += bytes;
         } while (str[bytes - 1] != '\0' && bytes > 0); // end on read end or null terminator
         printf("\x1b[36mconn:\x1b[0m %s", str);
-    }
+    } while (bytes > 0);
 
     close(s);
+    return NULL;
 }
 
-void forktoin(int s) {
+void *forktoin(void *c) {
+	printf("forktoin\n");
     // Read from connection, write to stdout
+    int s = *(int *) c;
     const int size = BUFSIZ;
     char str[size]; int bytes;
     char cprefix[] = "you: ";
 
     // loop sends and recieves null-terminated strings.
-    while (1) {
+    do {
         do {
+        	bytes = 0;
             bytes = read(STDIN_FILENO, str, size - 1);
-            str[bytes++] = '\0'; // append with null byte
         } while (bytes == 0); // while nothing is read
-        write(s, str, bytes);
-    }
+        str[bytes++] = '\0'; // append with null byte
+        bytes = write(s, str, bytes);
+    } while (bytes > 0);
 
     close(s);
+    return NULL;
 }
 
 void forkreadwrite(int c) {
     // fork to read/write
-    switch (fork()) {
+    printf("I AM HERE\n");
+    pthread_t th[2];
+    int a = pthread_create(&th[0], NULL, forktosock, (void *) &c);
+    int b = pthread_create(&th[1], NULL, forktoin, (void *) &c);
+
+    pthread_join(a, NULL);
+    pthread_join(b, NULL);
+
+    /*switch (fork()) {
         case -1:
             perror("chatd fork");
             exit(5);
@@ -60,7 +76,7 @@ void forkreadwrite(int c) {
             forktoin(c);
             exit(0);
             break;
-    }
+    }*/
 }
 
 void conn_serve(char *ip) {
@@ -77,7 +93,8 @@ void conn_serve(char *ip) {
 
     printf("\x1b[36mconnection established with server\x1b[0m\n");
 
-    forkreadwrite(s);
+    forkreadwrite(c);
+    printf("HHDLOHLJFDLJLDF\n");
 }
 
 void serve_conn() {
@@ -89,13 +106,13 @@ void serve_conn() {
     sa = *sockaddrn(PORT, INADDR_ANY, &sa);
 
     if (getbind(s, &sa) < 0) {
-        perror("chatd bind"); exit(2);}
+        perror("bind"); exit(2);}
 
     listen(s, BACKLOG);
 
     while (1) {
         if ((c = getaccept(s, &sa)) < 0) {
-            perror("chatd accept"); exit(4);
+            perror("accept"); exit(4);
         }
 
         printf("\x1b[36mconnection established with client\x1b[0m\n");
